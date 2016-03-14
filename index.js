@@ -3,7 +3,7 @@ var Promise = require('bluebird');
 
 var getAllFollowees = {
     counter: 0,
-    store:[],
+    store: [],
     request: function(options) {
         if (!options) {
             var options = {};
@@ -31,22 +31,22 @@ var getAllFollowees = {
                 console.log(_this.counter + '  complete');
                 if (tmp.length > 0) {
                     _this.counter = _this.counter + 20;
-                    _this.request(options);
+                    resolve(_this.request(options));
                 } else {
-                    _this.complete();
+                    resolve({
+                        data: _this.store
+                    });
                 };
             })
         })
-    },
-    complete:function(){
-        console.log("========RESULT========");
-        console.log(this.store);
-        console.log("========RESULT========");
     }
 }
 
 getAllFollowees.request({
     followees: true
+}).then(function(result) {
+    console.log("success!!!");
+    console.log(result);
 })
 
 function parseCard(text) {
