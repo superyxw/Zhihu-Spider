@@ -1,66 +1,75 @@
-var request = require('request');
+var fetchFollwerOrFollwee = require('./fetchFollwerOrFollwee');
+var getUser = require('./getUser');
 var Promise = require('bluebird');
-var config = require('./config');
-
-var Spider = function() {
-    return {
-        counter: 0,
-        store: [],
-        request: function(options) {
-            if (!options) {
-                var options = {};
-            }
-            var _this = this;
-            return new Promise(function(resolve, reject) {
-                request({
-                    method: 'POST',
-                    url: options.followees ? 'https://www.zhihu.com/node/ProfileFolloweesListV2' : 'https://www.zhihu.com/node/ProfileFollowersListV2',
-                    form: {
-                        method: "next",
-                        params: "{\"offset\":{{counter}},\"order_by\":\"created\",\"hash_id\":\"{{hash_id}}\"}".replace(/{{counter}}/, _this.counter).replace(/{{hash_id}}/, options.hash_id),
-                        _xsrf: "44f011b01f29816fc257fae1770a9ece"
-                    },
-                    headers: {
-                        'cookie': config.cookie,
-                        'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
-                        'cache-control': 'no-cache',
-                        'x-requested-with': 'XMLHttpRequest'
-                    }
-                }, function(err, res, body) {
-                    var tmp = JSON.parse(body).msg.map(parseCard);
-                    _this.store = _this.store.concat(tmp);
-                    console.log(_this.counter + '  complete');
-                    if (tmp.length > 0) {
-                        _this.counter = _this.counter + 20;
-                        resolve(_this.request(options));
-                    } else {
-                        resolve({
-                            data: _this.store
-                        });
-                    };
-                })
-            })
-        }
-    }
-}
-
-function parseCard(text) {
-    var result = {};
-    var re1 = /data-id=\"(\S*)\"/g;
-    var re2 = /<h2 class=\"zm-list-content-title\">.*>(.*)<\/a><\/h2>/g
-    var re3 = /href=\"(https:\/\/www\.zhihu\.com\/people\/\S*)\"/g;
-    re1.exec(text);
-    result.hash_id = RegExp.$1;
-    re2.exec(text);
-    result.name = RegExp.$1;
-    re3.exec(text);
-    result.url = RegExp.$1;
-    return result;
-}
-
-function consoleLog(x) {
-    console.log(x);
-    return x;
-}
 
 module.exports = Spider;
+
+function Spider(userPageUrl) {
+    //getUser('https://www.zhihu.com/people/xu-xin-yu-17')
+    return getUser(userPageUrl)
+        .then(function(user) {
+            return getFriends(user);
+        })
+        .then(function(myFriends) {
+            //return searchSameFriend(myFriends[20], myFriends)
+            return Promise.map(myFriends, function(myFriend) {
+                return getUser(myFriend.url);
+            }, { concurrency: 3 });
+        })
+        .then(function(myFriends) {
+            console.log(myFriends);
+            return Promise.map(myFriends, function(myFriend) {
+                return searchSameFriend(myFriend, myFriends);
+            }, { concurrency: 2 });
+        })
+        .catch(function(err) {
+            console.log(err);
+        })
+}
+
+
+
+function getFriends(user) {
+    var works = [fetchFollwerOrFollwee({
+        isFollowees: true,
+        user: user
+    }), fetchFollwerOrFollwee({
+        user: user
+    })];
+    return Promise.all(works).then(function(result) {
+        var followees = result[0];
+        var followers = result[1];
+        var friends = [];
+        followers.forEach(function(follower) {
+            followees.forEach(function(followee) {
+                if (follower.hash_id === followee.hash_id) {
+                    friends.push(follower);
+                }
+            });
+        });
+        return friends;
+    });
+}
+
+function searchSameFriend(aFriend, myFriends) {
+    console.log("searchSameFriend with " + aFriend.name + "......");
+    return getFriends(aFriend)
+        .then(function(targetFriends) {
+            var sameFriends = [];
+            targetFriends.forEach(function(targetFriend) {
+                myFriends.forEach(function(myFriend) {
+                    if (targetFriend.hash_id === myFriend.hash_id) {
+                        sameFriends.push(targetFriend);
+                    }
+                })
+            })
+            console.log("\n\n==============\n Same Friends with " + aFriend.name + "\n");
+            console.log(sameFriends);
+            console.log("\n\n");
+
+            return {
+                user: aFriend,
+                sameFriends: sameFriends
+            };
+        })
+}
