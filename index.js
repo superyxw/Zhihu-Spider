@@ -1,8 +1,33 @@
 var Spider = require('./Spider');
-var gexf = require('gexf');
+var express = require('express');
+var echartParser = require('./echartParser');
+var bodyParser = require('body-parser');
 
-Spider('https://www.zhihu.com/people/xu-xin-yu-17')
-    .then(function(result) {
-        console.log(result);
-    })
 
+var app = express();
+
+app.use(bodyParser());
+app.use('/js', express.static('./client'));
+app.use('/css', express.static('./client'));
+
+app.get('/', function(req, res) {
+    res.sendFile(__dirname + '/client/index.html');
+});
+
+app.get('/test', function(req, res) {
+    Spider('https://www.zhihu.com/people/hu-jiong-yi')
+        .then(function(result) {
+            var data = echartParser(result);
+            console.log(data);
+            res.send(data);
+        })
+});
+
+app.listen(3000);
+
+
+// Spider('https://www.zhihu.com/people/xu-xin-yu-17')
+//     .then(function(result) {
+//         var data = echartParser(result);
+//         console.log(data);
+//     })

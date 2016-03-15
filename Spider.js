@@ -22,6 +22,12 @@ function Spider(userPageUrl) {
                 return searchSameFriend(myFriend, myFriends);
             }, { concurrency: 2 });
         })
+        // .then(function(result){
+        //     result.forEach(function(item, index){
+        //         item.id = index;
+        //     })
+        //     return result;
+        // })
         .catch(function(err) {
             console.log(err);
         })
