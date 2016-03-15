@@ -62,6 +62,7 @@ function searchSameFriend(aFriend, myFriends) {
     return getFriends(aFriend)
         .then(function(targetFriends) {
             var sameFriends = [];
+            console.log('counting for ' + aFriend.name + '......')
             targetFriends.forEach(function(targetFriend) {
                 myFriends.forEach(function(myFriend) {
                     if (targetFriend.hash_id === myFriend.hash_id) {

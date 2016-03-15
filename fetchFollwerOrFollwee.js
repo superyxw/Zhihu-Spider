@@ -12,9 +12,9 @@ var fetchFollwerOrFollwee = function(options) {
     }
     return Promise.map(offsets, function(offset) {
         return getFollwerOrFollwee(user, offset, isFollowees);
-    }, { concurrency: 2 }).then(function(array){
+    }, { concurrency: 3 }).then(function(array) {
         var result = [];
-        array.forEach(function(item){
+        array.forEach(function(item) {
             result = result.concat(item);
         });
         return result;
@@ -50,7 +50,8 @@ function getFollwerOrFollwee(user, offset, isFollowees) {
                 'content-type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 'cache-control': 'no-cache',
                 'x-requested-with': 'XMLHttpRequest'
-            }
+            },
+            timeout: 3000
         }, function(err, res, body) {
             var tmp = [];
             try {
@@ -64,9 +65,13 @@ function getFollwerOrFollwee(user, offset, isFollowees) {
                 console.log(e, body);
                 console.log("======ERROR======\n");
             }
-            if(err){
-                reject(err)
-            }else{
+            if (err) {
+                if (err.code == 'ETIMEDOUT' || err.code == 'ESOCKETTIMEDOUT') {
+                    resolve(getFollwerOrFollwee(user, offset, isFollowees));
+                } else {
+                    reject(err)
+                }
+            } else {
                 resolve(tmp);
             }
         })

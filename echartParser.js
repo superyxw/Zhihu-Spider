@@ -66,7 +66,7 @@ function echartParser(input) {
         data.push({
             "id": hash_id_to_common_id[item.user.hash_id],
             "name": item.user.name,
-            "symbolSize": 20, //item.user.followerAmount,
+            "symbolSize": 10, //item.user.followerAmount,
             "label": {
                 "normal": { "show": true }
             },

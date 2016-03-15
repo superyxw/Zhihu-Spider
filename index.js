@@ -15,7 +15,7 @@ app.get('/', function(req, res) {
 });
 
 app.get('/test', function(req, res) {
-    Spider('https://www.zhihu.com/people/hu-jiong-yi')
+    Spider('https://www.zhihu.com/people/starkwei')
         .then(function(result) {
             var data = echartParser(result);
             console.log(data);
@@ -24,10 +24,3 @@ app.get('/test', function(req, res) {
 });
 
 app.listen(3000);
-
-
-// Spider('https://www.zhihu.com/people/xu-xin-yu-17')
-//     .then(function(result) {
-//         var data = echartParser(result);
-//         console.log(data);
-//     })
