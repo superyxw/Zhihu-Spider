@@ -7,8 +7,8 @@ var bodyParser = require('body-parser');
 var app = express();
 
 app.use(bodyParser());
-app.use('/js', express.static('./client'));
-app.use('/css', express.static('./client'));
+app.use('/js', express.static('./client/build'));
+app.use('/css', express.static('./client/build'));
 
 app.get('/', function(req, res) {
     res.sendFile(__dirname + '/client/index.html');
