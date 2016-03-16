@@ -2,7 +2,7 @@ var request = require('request');
 var Promise = require('bluebird');
 var config = require('./config');
 
-var fetchFollwerOrFollwee = function(options) {
+var fetchFollwerOrFollwee = function(options, socket) {
     var user = options.user;
     var isFollowees = options.isFollowees;
     var grounpAmount = isFollowees ? Math.ceil(user.followeeAmount / 20) : Math.ceil(user.followerAmount / 20);
@@ -11,7 +11,7 @@ var fetchFollwerOrFollwee = function(options) {
         offsets.push(i * 20);
     }
     return Promise.map(offsets, function(offset) {
-        return getFollwerOrFollwee(user, offset, isFollowees);
+        return getFollwerOrFollwee(user, offset, isFollowees, socket);
     }, { concurrency: 3 }).then(function(array) {
         var result = [];
         array.forEach(function(item) {
@@ -21,18 +21,8 @@ var fetchFollwerOrFollwee = function(options) {
     })
 }
 
-// fetchFollwerOrFollwee({
-//     user: {
-//         hash_id: 'f0d87e715ed801e0230976d7f26f5cc8',
-//         name: 'Azure',
-//         url: 'https://www.zhihu.com/people/azure-62',
-//         followeeAmount: 847,
-//         followerAmount: 53
-//     },
-//     isFollowees: true
-// })
-
-function getFollwerOrFollwee(user, offset, isFollowees) {
+function getFollwerOrFollwee(user, offset, isFollowees, socket) {
+    socket.emit('notice','开始抓取 ' + user.name + ' 的第 ' + offset + '-' + (offset + 20) + ' 位' + (isFollowees ? '关注的人' : '关注者'));
     console.log('开始抓取 ' + user.name + ' 的第 ' + offset + '-' + (offset + 20) + ' 位' + (isFollowees ? '关注的人' : '关注者'));
     var params = "{\"offset\":{{counter}},\"order_by\":\"created\",\"hash_id\":\"{{hash_id}}\"}".replace(/{{counter}}/, offset).replace(/{{hash_id}}/, user.hash_id);
     //console.log(params);
@@ -67,7 +57,7 @@ function getFollwerOrFollwee(user, offset, isFollowees) {
             }
             if (err) {
                 if (err.code == 'ETIMEDOUT' || err.code == 'ESOCKETTIMEDOUT') {
-                    resolve(getFollwerOrFollwee(user, offset, isFollowees));
+                    resolve(getFollwerOrFollwee(user, offset, isFollowees, socket));
                 } else {
                     reject(err)
                 }

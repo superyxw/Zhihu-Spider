@@ -1,33 +1,42 @@
 var fetchFollwerOrFollwee = require('./fetchFollwerOrFollwee');
 var getUser = require('./getUser');
 var Promise = require('bluebird');
+var echartParser = require('./echartParser');
 
 module.exports = Spider;
 
-function Spider(userPageUrl) {
-    //getUser('https://www.zhihu.com/people/xu-xin-yu-17')
+function Spider(userPageUrl, socket) {
+    socket.emit('notice', '抓取用户信息......');
     return getUser(userPageUrl)
         .then(function(user) {
-            return getFriends(user);
+            socket.emit('notice', '抓取用户信息成功');
+            return getFriends(user, socket);
         })
         .then(function(myFriends) {
-            //return searchSameFriend(myFriends[20], myFriends)
             return Promise.map(myFriends, function(myFriend) {
                 return getUser(myFriend.url);
             }, { concurrency: 3 });
         })
         .then(function(myFriends) {
+            var input = [];
+            myFriends.forEach(function(friend) {
+                input.push({
+                    "user": friend,
+                    "sameFriends": []
+                })
+            });
+            socket.emit('data', input);
+
             console.log(myFriends);
             return Promise.map(myFriends, function(myFriend) {
-                return searchSameFriend(myFriend, myFriends);
+                return searchSameFriend(myFriend, myFriends, socket);
             }, { concurrency: 2 });
         })
-        // .then(function(result){
-        //     result.forEach(function(item, index){
-        //         item.id = index;
-        //     })
-        //     return result;
-        // })
+        .then(function(result) {
+            var data = result;
+            socket.emit('data', data);
+
+        })
         .catch(function(err) {
             console.log(err);
         })
@@ -35,13 +44,13 @@ function Spider(userPageUrl) {
 
 
 
-function getFriends(user) {
+function getFriends(user, socket) {
     var works = [fetchFollwerOrFollwee({
         isFollowees: true,
         user: user
-    }), fetchFollwerOrFollwee({
+    }, socket), fetchFollwerOrFollwee({
         user: user
-    })];
+    }, socket)];
     return Promise.all(works).then(function(result) {
         var followees = result[0];
         var followers = result[1];
@@ -57,9 +66,10 @@ function getFriends(user) {
     });
 }
 
-function searchSameFriend(aFriend, myFriends) {
+function searchSameFriend(aFriend, myFriends, socket) {
+    socket.emit("notice", "searchSameFriend with " + aFriend.name + "......");
     console.log("searchSameFriend with " + aFriend.name + "......");
-    return getFriends(aFriend)
+    return getFriends(aFriend, socket)
         .then(function(targetFriends) {
             var sameFriends = [];
             console.log('counting for ' + aFriend.name + '......')
@@ -71,6 +81,10 @@ function searchSameFriend(aFriend, myFriends) {
                 })
             })
             console.log("\n\n==============\n Same Friends with " + aFriend.name + "\n");
+            socket.emit('same friend', {
+                hash_id: aFriend.hash_id,
+                sameFriends: sameFriends
+            })
             console.log(sameFriends);
             console.log("\n\n");
 

@@ -3,8 +3,16 @@ var express = require('express');
 var echartParser = require('./echartParser');
 var bodyParser = require('body-parser');
 
-
 var app = express();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
+io.on('connection', function(socket) {
+    socket.on('fetch start', function(data) {
+        Spider(data.url, socket);
+    });
+});
+server.listen(3001);
+
 
 app.use(bodyParser());
 app.use('/js', express.static('./client/build'));
@@ -14,13 +22,13 @@ app.get('/', function(req, res) {
     res.sendFile(__dirname + '/client/index.html');
 });
 
-app.get('/test', function(req, res) {
-    Spider('https://www.zhihu.com/people/starkwei')
-        .then(function(result) {
-            var data = echartParser(result);
-            console.log(data);
-            res.send(data);
-        })
-});
+// app.get('/test', function(req, res) {
+//     Spider('https://www.zhihu.com/people/starkwei')
+//         .then(function(result) {
+//             var data = echartParser(result);
+//             console.log(data);
+//             res.send(data);
+//         })
+// });
 
 app.listen(3000);
