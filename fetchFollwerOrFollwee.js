@@ -12,7 +12,7 @@ var fetchFollwerOrFollwee = function(options, socket) {
     }
     return Promise.map(offsets, function(offset) {
         return getFollwerOrFollwee(user, offset, isFollowees, socket);
-    }, { concurrency: 3 }).then(function(array) {
+    }, { concurrency: 5 }).then(function(array) {
         var result = [];
         array.forEach(function(item) {
             result = result.concat(item);
