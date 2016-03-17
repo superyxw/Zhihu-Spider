@@ -15,7 +15,7 @@ function Spider(userPageUrl, socket) {
         .then(function(myFriends) {
             return Promise.map(myFriends, function(myFriend) {
                 return getUser(myFriend.url);
-            }, { concurrency: 5 });
+            }, { concurrency: 3 });
         })
         .then(function(myFriends) {
             var input = [];
@@ -30,7 +30,7 @@ function Spider(userPageUrl, socket) {
             console.log(myFriends);
             return Promise.map(myFriends, function(myFriend) {
                 return searchSameFriend(myFriend, myFriends, socket);
-            }, { concurrency: 5 });
+            }, { concurrency: 3 });
         })
         .then(function(result) {
             var data = result;
