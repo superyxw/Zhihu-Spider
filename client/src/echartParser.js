@@ -49,9 +49,13 @@ var input = [{
 }]
 
 function echartParser(input) {
+    console.log(input);
     var hash_id_to_common_id = {}
     input.forEach(function(item, index) {
-        hash_id_to_common_id[item.user.hash_id] = index + 1;
+        if (item.user.hash_id) {
+            hash_id_to_common_id[item.user.hash_id] = index + 1;
+            console.log(item.user.hash_id, index + 1, item);
+        }
     });
     var data = [];
     data.push({
@@ -63,30 +67,35 @@ function echartParser(input) {
         }
     })
     input.forEach(function(item, index) {
-        data.push({
-            "id": hash_id_to_common_id[item.user.hash_id],
-            "name": item.user.name,
-            "symbolSize": 10, //item.user.followerAmount,
-            "label": {
-                "normal": { "show": true }
-            },
-            draggable: true
-        })
+        if (item.user.hash_id) {
+            data.push({
+                "id": hash_id_to_common_id[item.user.hash_id],
+                "name": item.user.name,
+                "symbolSize": 10, //item.user.followerAmount,
+                "label": {
+                    "normal": { "show": true }
+                },
+                draggable: true
+            })
+        }
     });
 
     var links = [];
     input.forEach(function(item) {
-        links.push({
-            source: 0,
-            target: hash_id_to_common_id[item.user.hash_id]
-        })
-        item.sameFriends.forEach(function(item2) {
+        if (item.user.hash_id) {
             links.push({
-                source: hash_id_to_common_id[item.user.hash_id],
-                target: hash_id_to_common_id[item2.hash_id]
+                source: 0,
+                target: hash_id_to_common_id[item.user.hash_id]
             })
-        })
+            item.sameFriends.forEach(function(item2) {
+                links.push({
+                    source: hash_id_to_common_id[item.user.hash_id],
+                    target: hash_id_to_common_id[item2.hash_id]
+                })
+            })
+        }
     });
+    console.log("data:" + data);
     return {
         data: data,
         links: links

@@ -1,7 +1,6 @@
 var fetchFollwerOrFollwee = require('./fetchFollwerOrFollwee');
 var getUser = require('./getUser');
 var Promise = require('bluebird');
-var echartParser = require('./echartParser');
 
 module.exports = Spider;
 
@@ -10,6 +9,7 @@ function Spider(userPageUrl, socket) {
     return getUser(userPageUrl)
         .then(function(user) {
             socket.emit('notice', '抓取用户信息成功');
+            socket.emit('get user', user);
             return getFriends(user, socket);
         })
         .then(function(myFriends) {
@@ -30,7 +30,7 @@ function Spider(userPageUrl, socket) {
             console.log(myFriends);
             return Promise.map(myFriends, function(myFriend) {
                 return searchSameFriend(myFriend, myFriends, socket);
-            }, { concurrency: 2 });
+            }, { concurrency: 3 });
         })
         .then(function(result) {
             var data = result;

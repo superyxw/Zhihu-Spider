@@ -49,7 +49,7 @@
 	var $ = __webpack_require__(397);
 	var myChart = echarts.init(document.getElementById('main'));
 	var echartParser = __webpack_require__(398);
-
+	var USER_NAME;
 	$("#submit").click(function() {
 	    socket.emit('fetch start', {
 	        url: $("#url").val()
@@ -61,6 +61,7 @@
 	    console.log(data);
 	    dataStore = data;
 	    result = echartParser(dataStore);
+	    result.data[0].name = USER_NAME;
 	    var option = {
 	        title: {
 	            text: 'Les Miserables',
@@ -94,6 +95,7 @@
 	        if (item.user.hash_id == data.hash_id) {
 	            item.sameFriends = data.sameFriends;
 	            result = echartParser(dataStore);
+	            result.data[0].name = USER_NAME;
 	            var option = {
 	                title: {
 	                    text: 'Les Miserables',
@@ -123,6 +125,9 @@
 	        }
 	    })
 	})
+	socket.on('get user',function(user){
+	    USER_NAME = user.name;
+	})
 	socket.on('log', function(data) {
 	    console.log(data);
 	});
@@ -131,39 +136,6 @@
 	socket.on('notice', function(data) {
 	    notice.html(data);
 	});
-	// 基于准备好的dom，初始化echarts实例
-
-	// 绘制图表
-
-	// $.get('/test', function(data) {
-	//     console.log(data);
-	//     option = {
-	//         title: {
-	//             text: 'Les Miserables',
-	//             subtext: 'Default layout',
-	//             top: 'bottom',
-	//             left: 'right'
-	//         },
-	//         tooltip: {},
-	//         animationDuration: 1500,
-	//         animationEasingUpdate: 'quinticInOut',
-	//         series: [{
-	//             name: 'Les Miserables',
-	//             type: 'graph',
-	//             layout: 'force',
-	//             data: data.data,
-	//             links: data.links,
-	//             roam: true,
-	//             label: {
-	//                 normal: {
-	//                     position: 'right',
-	//                     formatter: '{b}'
-	//                 }
-	//             },
-	//         }]
-	//     };
-	//     myChart.setOption(option);
-	// })
 
 
 /***/ },
@@ -71489,9 +71461,13 @@
 	}]
 
 	function echartParser(input) {
+	    console.log(input);
 	    var hash_id_to_common_id = {}
 	    input.forEach(function(item, index) {
-	        hash_id_to_common_id[item.user.hash_id] = index + 1;
+	        if (item.user.hash_id) {
+	            hash_id_to_common_id[item.user.hash_id] = index + 1;
+	            console.log(item.user.hash_id, index + 1, item);
+	        }
 	    });
 	    var data = [];
 	    data.push({
@@ -71503,30 +71479,35 @@
 	        }
 	    })
 	    input.forEach(function(item, index) {
-	        data.push({
-	            "id": hash_id_to_common_id[item.user.hash_id],
-	            "name": item.user.name,
-	            "symbolSize": 10, //item.user.followerAmount,
-	            "label": {
-	                "normal": { "show": true }
-	            },
-	            draggable: true
-	        })
+	        if (item.user.hash_id) {
+	            data.push({
+	                "id": hash_id_to_common_id[item.user.hash_id],
+	                "name": item.user.name,
+	                "symbolSize": 10, //item.user.followerAmount,
+	                "label": {
+	                    "normal": { "show": true }
+	                },
+	                draggable: true
+	            })
+	        }
 	    });
 
 	    var links = [];
 	    input.forEach(function(item) {
-	        links.push({
-	            source: 0,
-	            target: hash_id_to_common_id[item.user.hash_id]
-	        })
-	        item.sameFriends.forEach(function(item2) {
+	        if (item.user.hash_id) {
 	            links.push({
-	                source: hash_id_to_common_id[item.user.hash_id],
-	                target: hash_id_to_common_id[item2.hash_id]
+	                source: 0,
+	                target: hash_id_to_common_id[item.user.hash_id]
 	            })
-	        })
+	            item.sameFriends.forEach(function(item2) {
+	                links.push({
+	                    source: hash_id_to_common_id[item.user.hash_id],
+	                    target: hash_id_to_common_id[item2.hash_id]
+	                })
+	            })
+	        }
 	    });
+	    console.log("data:" + data);
 	    return {
 	        data: data,
 	        links: links
