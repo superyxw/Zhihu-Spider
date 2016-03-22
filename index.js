@@ -21,4 +21,6 @@ app.get('/', function(req, res) {
     res.sendFile(__dirname + '/client/index.html');
 });
 
-app.listen(3000);
+var appinfo = app.listen(3000,function(){
+	console.log('server start at :%s',appinfo.address().port)
+});
