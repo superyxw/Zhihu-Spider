@@ -25,7 +25,7 @@ function getFollwerOrFollwee(user, offset, isFollowees, socket) {
     socket.emit('notice','开始抓取 ' + user.name + ' 的第 ' + offset + '-' + (offset + 20) + ' 位' + (isFollowees ? '关注的人' : '关注者'));
     console.log('开始抓取 ' + user.name + ' 的第 ' + offset + '-' + (offset + 20) + ' 位' + (isFollowees ? '关注的人' : '关注者'));
     var params = "{\"offset\":{{counter}},\"order_by\":\"created\",\"hash_id\":\"{{hash_id}}\"}".replace(/{{counter}}/, offset).replace(/{{hash_id}}/, user.hash_id);
-    console.log(params);
+    // console.log(params);
     return new Promise(function(resolve, reject) {
         request({
             method: 'POST',
