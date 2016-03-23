@@ -1,6 +1,6 @@
 var request = require('request');
 var Promise = require('bluebird');
-var config = require('./config');
+var config = require('../config');
 
 var fetchFollwerOrFollwee = function(options, socket) {
     var user = options.user;

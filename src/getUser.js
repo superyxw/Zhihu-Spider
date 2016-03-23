@@ -1,6 +1,6 @@
 var request = require('request');
 var Promise = require('bluebird');
-var config = require('./config');
+var config = require('../config');
 
 function getUser(userPageUrl) {
     return new Promise(function(resolve, reject) {

@@ -1,4 +1,4 @@
-var Spider = require('./Spider');
+var Spider = require('./src/Spider');
 var express = require('express');
 var bodyParser = require('body-parser');
 
