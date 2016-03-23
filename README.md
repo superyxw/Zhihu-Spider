@@ -16,7 +16,7 @@ node index.js // Server runs at localhost:3000
 `config.js`
 
 - `cookie` [string]（必填项） : 自己在知乎上的cookie
-- `\_xsrf` [string]（必填项）: 自己在知乎上的_xsrf
+- `_xsrf` [string]（必填项）: 自己在知乎上的_xsrf
 - `concurrency` [number]（可选项）: 请求的并发数，默认为3
 
 **由于知乎的API较不稳定，concurrency并发数太大可能会造成卡死，在网络环境不好时建议设置为2或者1**
