@@ -13,7 +13,7 @@ io.on('connection', function(socket) {
 server.listen(3001);
 
 
-app.use(bodyParser());
+app.use(bodyParser());// WARNING
 app.use('/js', express.static('./client/build'));
 app.use('/css', express.static('./client/build'));
 
@@ -21,4 +21,6 @@ app.get('/', function(req, res) {
     res.sendFile(__dirname + '/client/index.html');
 });
 
-app.listen(3000);
+app.listen(3000,function(){
+	console.log('server start at 127.0.0.1:%s',this.address().port)
+});

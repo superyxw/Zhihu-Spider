@@ -14,5 +14,7 @@ node index.js // Server runs at localhost:3000
 ------
 #配置
 `config.js`中需填入自己在知乎上的cookie
-
+```
+document.cookie //在 Chrome Console 中运行 
+```
 
