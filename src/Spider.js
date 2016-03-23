@@ -1,7 +1,7 @@
 var fetchFollwerOrFollwee = require('./fetchFollwerOrFollwee');
 var getUser = require('./getUser');
 var Promise = require('bluebird');
-
+var config = require('../config');
 module.exports = Spider;
 
 function Spider(userPageUrl, socket) {
@@ -15,7 +15,7 @@ function Spider(userPageUrl, socket) {
         .then(function(myFriends) {
             return Promise.map(myFriends, function(myFriend) {
                 return getUser(myFriend.url);
-            }, { concurrency: 3 });
+            }, { concurrency: config.concurrency ? config.concurrency : 3 });
         })
         .then(function(myFriends) {
             var input = [];
@@ -30,7 +30,7 @@ function Spider(userPageUrl, socket) {
             console.log(myFriends);
             return Promise.map(myFriends, function(myFriend) {
                 return searchSameFriend(myFriend, myFriends, socket);
-            }, { concurrency: 3 });
+            }, { concurrency: config.concurrency ? config.concurrency : 3 });
         })
         .then(function(result) {
             var data = result;
