@@ -36,4 +36,10 @@ node index.js // Server runs at localhost:3000
 ![DEMO](https://github.com/starkwang/Zhihu-Spider/blob/master/img/Snip20160323_3.png?raw=true)
 
 
+------
 
+#已知的BUG或者缺陷
+
+1. 对于粉丝数过多的大V，爬取速度过慢
+2. 当相互关注的人中有自己时，不能爬取和自己有关的关系链
+3. 请求失败或者timeout时，没有重发请求，可能会导致部分数据缺失
