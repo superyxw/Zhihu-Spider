@@ -1,4 +1,5 @@
 module.exports = {
     cookie:'',
-    _xsrf:''
+    _xsrf:'',
+    concurrency:1
 }
